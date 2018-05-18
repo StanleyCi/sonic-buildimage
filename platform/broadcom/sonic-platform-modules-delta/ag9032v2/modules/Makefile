@@ -1,2 +1,2 @@
-obj-m := dni_emc2305.o
+obj-m := delta_ag9032v2_platform.o
 
