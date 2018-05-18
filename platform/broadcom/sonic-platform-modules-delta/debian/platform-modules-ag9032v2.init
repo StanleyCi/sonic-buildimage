@@ -20,15 +20,6 @@ start)
     modprobe i2c-dev
     modprobe i2c-i801
     modprobe i2c-ismt
-    modprobe i2c-mei
-    modprobe i2c-mux-pca954x
-    modprobe at24
-    modprobe ipmi_devintf
-    modprobe ipmi_si trydefaults=1
-    modprobe delta_ag9032v2_cpld
-    modprobe delta_ag9032v2_swpld
-    modprobe delta_ag9032v2_platform
-
     /usr/local/bin/ag9032v2_platform_init.sh
 
     echo "done."

@@ -28,5 +28,5 @@ class board(eeprom_tlvinfo.TlvInfoDecoder):
     _TLV_INFO_MAX_LEN = 256
 
     def __init__(self, name, path, cpld_root, ro):
-	self.eeprom_path = "/sys/devices/pci0000:00/0000:00:1f.3/i2c-0/0-0056/eeprom"
+	self.eeprom_path = "/sys/devices/pci0000:00/0000:00:13.0/i2c-1/i2c-2/2-0053/eeprom"
 	super(board, self).__init__(self.eeprom_path, 0, '', True)
