@@ -14,10 +14,10 @@ class SfpUtil(SfpUtilBase):
     """Platform-specific SfpUtil class"""
 
     PORT_START = 0
-    PORT_END = 31
-    PORTS_IN_BLOCK = 32
-
-    EEPROM_OFFSET = 50
+    PORT_END = 33
+    PORTS_IN_BLOCK = 34
+    PORT_NUM_SFP = 2
+    EEPROM_OFFSET = 20
 
     _port_to_eeprom_mapping = {}
 
@@ -31,7 +31,7 @@ class SfpUtil(SfpUtilBase):
 
     @property
     def qsfp_ports(self):
-        return range(0, self.PORTS_IN_BLOCK + 1)
+        return range(0, self.PORTS_IN_BLOCK - PORT_NUM_SFP + 1)
 
     @property
     def port_to_eeprom_mapping(self):
@@ -46,20 +46,33 @@ class SfpUtil(SfpUtilBase):
         SfpUtilBase.__init__(self)
 
     def get_presence(self, port_num):
-        # Check for invalid port_num
+        # Check for invalid port_num_32
         if port_num < self.port_start or port_num > self.port_end:
             return False
 
         try:
-            reg_file = open("/sys/devices/platform/delta-ag9032v1-swpld.0/sfp_present")
+            reg_file = open("/sys/devices/platform/delta-ag9032v2-swpld1.0/sfp_present_32")
         except IOError as e:
             print "Error: unable to open file: %s" % str(e)
             return False
 
         content = reg_file.readline().rstrip()
 
+        # Check for invalid port_num_2
+        if port_num < self.port_start or port_num > self.port_end:
+            return False
+
+        try:
+            reg_file = open("/sys/devices/platform/delta-ag9032v2-swpld2.1/sfp_present_2")
+        except IOError as e:
+            print "Error: unable to open file: %s" % str(e)
+            return False
+
+        content_2 = reg_file.readline().rstrip()
+
         # content is a string containing the hex representation of the register
         reg_value = int(content, 16)
+	reg_value = reg_value | int(content_2, 16)
 
         # Mask off the bit corresponding to our port
         mask = (1 << port_num)
@@ -76,7 +89,7 @@ class SfpUtil(SfpUtilBase):
             return False
 
         try:
-            reg_file = open("/sys/devices/platform/delta-ag9032v1-swpld.0/sfp_lpmode")
+            reg_file = open("/sys/devices/platform/delta-ag9032v2-swpld1.0/sfp_lpmode")
         except IOError as e:
             print "Error: unable to open file: %s" % str(e)
 
@@ -100,7 +113,7 @@ class SfpUtil(SfpUtilBase):
             return False
 
         try:
-            reg_file = open("/sys/devices/platform/delta-ag9032v1-swpld.0/sfp_lpmode", "r+")
+            reg_file = open("/sys/devices/platform/delta-ag9032v2-swpld1.0/sfp_lpmode", "r+")
         except IOError as e:
             print "Error: unable to open file: %s" % str(e)
             return False
@@ -109,7 +122,6 @@ class SfpUtil(SfpUtilBase):
 
         # content is a string containing the hex representation of the register
         reg_value = int(content, 16)
-
         # Mask off the bit corresponding to our port
         mask = (1 << port_num)
 
@@ -118,18 +130,18 @@ class SfpUtil(SfpUtilBase):
             reg_value = reg_value | mask
         else:
             reg_value = reg_value & ~mask
-
         # Convert our register value back to a hex string and write back
         content = hex(reg_value)
-
         reg_file.seek(0)
         reg_file.write(content)
-        reg_file.close()
-
+	try:
+	    reg_file.close()
+	except IOError:
+            pass
         return True
 
     def reset(self, port_num):
-        QSFP_RESET_REGISTER_DEVICE_FILE = "/sys/devices/platform/delta-ag9032v1-swpld.0/sfp_reset"
+        QSFP_RESET_REGISTER_DEVICE_FILE = "/sys/devices/platform/delta-ag9032v2-swpld1.0/sfp_reset"
 
         # Check for invalid port_num
         if port_num < self.port_start or port_num > self.port_end:
@@ -153,8 +165,10 @@ class SfpUtil(SfpUtilBase):
         reg_value = reg_value & ~mask
 
         # Convert our register value back to a hex string and write back
+	content = hex(reg_value)
+
         reg_file.seek(0)
-        reg_file.write(hex(reg_value))
+        reg_file.write(content)
         reg_file.close()
 
         # Sleep 1 second to allow it to settle
