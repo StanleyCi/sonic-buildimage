@@ -31,7 +31,7 @@ class SfpUtil(SfpUtilBase):
 
     @property
     def qsfp_ports(self):
-        return range(0, self.PORTS_IN_BLOCK - PORT_NUM_SFP + 1)
+        return range(0, self.PORTS_IN_BLOCK - self.PORT_NUM_SFP + 1)
 
     @property
     def port_to_eeprom_mapping(self):
